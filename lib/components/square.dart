@@ -9,7 +9,10 @@ class Square extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: isWhite ? Colors.black : Colors.white,
+      color:
+          isWhite
+              ? const Color.fromARGB(255, 53, 52, 52)
+              : const Color.fromARGB(255, 110, 107, 107),
       child:
           piece != null
               ? Image.asset(

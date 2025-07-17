@@ -42,6 +42,26 @@ class _GameBoardState extends State<GameBoard> {
       );
     }
     //place rooks here
+    newBoard[0][0] = ChessPiece(
+      type: chessPieceType.rook,
+      isWhite: false,
+      imgPath: "assets/images/rook.png",
+    );
+    newBoard[0][7] = ChessPiece(
+      type: chessPieceType.rook,
+      isWhite: false,
+      imgPath: "assets/images/rook.png",
+    );
+    newBoard[7][0] = ChessPiece(
+      type: chessPieceType.rook,
+      isWhite: true,
+      imgPath: "assets/images/rook.png",
+    );
+    newBoard[7][7] = ChessPiece(
+      type: chessPieceType.rook,
+      isWhite: true,
+      imgPath: "assets/images/rook.png",
+    );
     // place knight here
     // place bishop here
     //place queen here
