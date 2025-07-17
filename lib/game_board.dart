@@ -63,9 +63,70 @@ class _GameBoardState extends State<GameBoard> {
       imgPath: "assets/images/rook.png",
     );
     // place knight here
+    newBoard[0][1] = ChessPiece(
+      type: chessPieceType.knight,
+      isWhite: false,
+      imgPath: "assets/images/Knight.png",
+    );
+    newBoard[0][6] = ChessPiece(
+      type: chessPieceType.knight,
+      isWhite: false,
+      imgPath: "assets/images/Knight.png",
+    );
+    newBoard[7][1] = ChessPiece(
+      type: chessPieceType.knight,
+      isWhite: true,
+      imgPath: "assets/images/Knight.png",
+    );
+    newBoard[7][6] = ChessPiece(
+      type: chessPieceType.knight,
+      isWhite: true,
+      imgPath: "assets/images/Knight.png",
+    );
     // place bishop here
+    newBoard[0][2] = ChessPiece(
+      type: chessPieceType.bishop,
+      isWhite: false,
+      imgPath: "assets/images/Bishop.png",
+    );
+    newBoard[0][5] = ChessPiece(
+      type: chessPieceType.bishop,
+      isWhite: false,
+      imgPath: "assets/images/Bishop.png",
+    );
+    newBoard[7][2] = ChessPiece(
+      type: chessPieceType.bishop,
+      isWhite: true,
+      imgPath: "assets/images/Bishop.png",
+    );
+    newBoard[7][5] = ChessPiece(
+      type: chessPieceType.bishop,
+      isWhite: true,
+      imgPath: "assets/images/Bishop.png",
+    );
     //place queen here
+    newBoard[0][3] = ChessPiece(
+      type: chessPieceType.queen,
+      isWhite: false,
+      imgPath: "assets/images/queen.png",
+    );
+    newBoard[7][4] = ChessPiece(
+      type: chessPieceType.queen,
+      isWhite: true,
+      imgPath: "assets/images/queen.png",
+    );
+
     //place king here
+    newBoard[0][4] = ChessPiece(
+      type: chessPieceType.king,
+      isWhite: false,
+      imgPath: "assets/images/king1.png",
+    );
+    newBoard[7][3] = ChessPiece(
+      type: chessPieceType.king,
+      isWhite: true,
+      imgPath: "assets/images/king1.png",
+    );
 
     board = newBoard;
   }
