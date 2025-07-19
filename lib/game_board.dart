@@ -15,6 +15,17 @@ class _GameBoardState extends State<GameBoard> {
   //with each position contaning a chess pieces
 
   late List<List<ChessPiece?>> board;
+  ChessPiece? selectedPieces;
+
+  // the row indes of selceted pieces
+  // -1 means defaut selected pices
+  int selectedRow = -1;
+  int selectedcol = -1;
+
+  //the list of vald moves for currenctly selected pieces
+  //each move is represent with 2 vaue row and col
+  List<List<int>> vaildMoves = [];
+
   @override
   void initState() {
     super.initState();
@@ -131,6 +142,70 @@ class _GameBoardState extends State<GameBoard> {
     board = newBoard;
   }
 
+  //User selected piece
+  void selectedPices(int row, int col) {
+    setState(() {
+      if (board[row][col] != null) {
+        selectedPieces = board[row][col];
+        selectedRow = row;
+        selectedcol = col;
+      }
+      vaildMoves = calculateRawValidMoves(
+        selectedRow,
+        selectedcol,
+        selectedPieces,
+      );
+    });
+  }
+
+  //calculate a raw valid moves
+  List<List<int>> calculateRawValidMoves(int row, int col, ChessPiece? piece) {
+    List<List<int>> canidateMoves = [];
+    //different direction based on their color
+    int direction = piece!.isWhite ? -1 : 1;
+    switch (piece.type) {
+      case chessPieceType.pawn:
+        //pawn can move forward if square is empty
+        if (isInBoard(row + direction, col) &&
+            board[row + direction][col] == null) {
+          canidateMoves.add([row + direction, col]);
+        }
+
+        //pawn can move 2 square if they are at inital postion
+        if ((row == 1 && !piece.isWhite) || (row == 6 && piece.isWhite)) {
+          if (isInBoard(row + 2, col) &&
+              board[row + 2 * direction][col] == null &&
+              board[row + direction][col] == null) {
+            canidateMoves.add([row + 2 * direction, col]);
+          }
+        }
+        //pawn can kill diagonallly
+        if (isInBoard(row + direction, col - 1) &&
+            board[row + direction][col - 1] != null &&
+            board[row + direction][col - 1]!.isWhite) {
+          canidateMoves.add([row + direction, col - 1]);
+        }
+        if (isInBoard(row + direction, col - 1) &&
+            board[row + direction][col + 1] != null &&
+            board[row + direction][col + 1]!.isWhite) {
+          canidateMoves.add([row + direction, col + 1]);
+        }
+        break;
+      case chessPieceType.rook:
+        break;
+      case chessPieceType.knight:
+        break;
+      case chessPieceType.bishop:
+        break;
+      case chessPieceType.queen:
+        break;
+      case chessPieceType.king:
+        break;
+      default:
+    }
+    return canidateMoves;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -143,7 +218,25 @@ class _GameBoardState extends State<GameBoard> {
           // get the row and col position
           int row = index ~/ 8;
           int col = index % 8;
-          return Square(isWhite: isWhite(index), piece: board[row][col]);
+
+          //check if the square is selected
+          bool isSelected = selectedRow == row && selectedcol == col;
+
+          // check if the square is valid move
+          bool isvalid = false;
+          for (var position in vaildMoves) {
+            //comapare row and col
+            if (position[0] == row && position[1] == col) {
+              isvalid = true;
+            }
+          }
+          return Square(
+            isWhite: isWhite(index),
+            piece: board[row][col],
+            isSelected: isSelected,
+            onTap: () => selectedPices(row, col),
+            isValid: isvalid,
+          );
         },
       ),
     );
