@@ -150,6 +150,11 @@ class _GameBoardState extends State<GameBoard> {
         selectedRow = row;
         selectedcol = col;
       }
+      // if there is a pieces selected and user tap on square that is valid moves
+      else if (selectedPieces != null &&
+          vaildMoves.any((element) => element[0] == row && element[1] == col)) {
+        movePiece(row, col);
+      }
       vaildMoves = calculateRawValidMoves(
         selectedRow,
         selectedcol,
@@ -161,6 +166,10 @@ class _GameBoardState extends State<GameBoard> {
   //calculate a raw valid moves
   List<List<int>> calculateRawValidMoves(int row, int col, ChessPiece? piece) {
     List<List<int>> canidateMoves = [];
+
+    if (piece == null) {
+      return [];
+    }
     //different direction based on their color
     int direction = piece!.isWhite ? -1 : 1;
     switch (piece.type) {
@@ -254,7 +263,7 @@ class _GameBoardState extends State<GameBoard> {
           [1, 1], // down right
         ];
         for (var direction in directions) {
-          var i = 0;
+          var i = 1;
           while (true) {
             var newRow = row + i * direction[0];
             var newCol = col + i * direction[0];
@@ -304,10 +313,49 @@ class _GameBoardState extends State<GameBoard> {
         }
         break;
       case chessPieceType.king:
+        var directions = [
+          [-1, 0], // up
+          [1, 0], // down
+          [0, -1], // left
+          [0, 1], // right
+          [-1, -1], // up left
+          [-1, 1], // up  right
+          [1, -1], // down  left
+          [1, 1], // down right
+        ];
+        for (var direction in directions) {
+          var newRow = row + direction[0];
+          var newCol = col + direction[1];
+          if (!isInBoard(newRow, newCol)) {
+            continue;
+          }
+          if (board[newRow][newCol] != null) {
+            if (board[newRow][newCol]!.isWhite != piece.isWhite) {
+              canidateMoves.add([newRow, newCol]); // capture
+            }
+            continue; // blocked
+          }
+          canidateMoves.add([newRow, newCol]);
+        }
+
         break;
       default:
     }
     return canidateMoves;
+  }
+
+  // move pieces
+  void movePiece(int newRow, int newCol) {
+    // move the peice and clear the old place
+    board[newRow][newCol] = selectedPieces;
+    board[selectedRow][selectedcol] = null;
+    // clear selection
+    setState(() {
+      selectedPieces = null;
+      selectedRow = -1;
+      selectedcol = -1;
+      vaildMoves = [];
+    });
   }
 
   @override
