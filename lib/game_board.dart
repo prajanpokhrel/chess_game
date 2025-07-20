@@ -26,6 +26,12 @@ class _GameBoardState extends State<GameBoard> {
   //each move is represent with 2 vaue row and col
   List<List<int>> vaildMoves = [];
 
+  //list of white pices taken  by black
+  List<ChessPiece> whitePicesTaken = [];
+
+  //list of black pices taken  by white
+  List<ChessPiece> blackPicesTaken = [];
+
   @override
   void initState() {
     super.initState();
@@ -143,9 +149,15 @@ class _GameBoardState extends State<GameBoard> {
   }
 
   //User selected piece
-  void selectedPices(int row, int col) {
+  void pieceSelected(int row, int col) {
     setState(() {
-      if (board[row][col] != null) {
+      // no piece is selected yet , this is the first selection
+      if (selectedPieces == null && board[row][col] != null) {
+        selectedPieces = board[row][col];
+        selectedRow = row;
+        selectedcol = col;
+      } else if (board[row][col] != null &&
+          board[row][col]!.isWhite == selectedPieces!.isWhite) {
         selectedPieces = board[row][col];
         selectedRow = row;
         selectedcol = col;
@@ -346,6 +358,17 @@ class _GameBoardState extends State<GameBoard> {
 
   // move pieces
   void movePiece(int newRow, int newCol) {
+    //if the new spot has an enemy piece
+    if (board[newRow][newCol] != null) {
+      //add the captured pieces to the appropriate list
+      var capturedPiece = board[newRow][newCol];
+      if (capturedPiece!.isWhite) {
+        whitePicesTaken.add(capturedPiece);
+      } else {
+        blackPicesTaken.add(capturedPiece);
+      }
+    }
+
     // move the peice and clear the old place
     board[newRow][newCol] = selectedPieces;
     board[selectedRow][selectedcol] = null;
@@ -386,7 +409,7 @@ class _GameBoardState extends State<GameBoard> {
             isWhite: isWhite(index),
             piece: board[row][col],
             isSelected: isSelected,
-            onTap: () => selectedPices(row, col),
+            onTap: () => pieceSelected(row, col),
             isValid: isvalid,
           );
         },
