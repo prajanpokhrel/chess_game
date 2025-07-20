@@ -246,8 +246,62 @@ class _GameBoardState extends State<GameBoard> {
         }
         break;
       case chessPieceType.bishop:
+        // diagonal direction
+        var directions = [
+          [-1, -1], //up left
+          [-1, 1], //up right
+          [1, -1], // down left
+          [1, 1], // down right
+        ];
+        for (var direction in directions) {
+          var i = 0;
+          while (true) {
+            var newRow = row + i * direction[0];
+            var newCol = col + i * direction[0];
+            if (!isInBoard(newRow, newCol)) {
+              break;
+            }
+            if (board[newRow][newCol] != null) {
+              if (board[newRow][newCol]!.isWhite != piece.isWhite) {
+                canidateMoves.add([newRow, newCol]); // capture
+              }
+              break; // block
+            }
+            canidateMoves.add([newRow, newCol]);
+            i++;
+          }
+        }
         break;
       case chessPieceType.queen:
+        // all eight directions: up, down ,left , rigth and 4 diagonals
+        var directions = [
+          [-1, 0], // up
+          [1, 0], // down
+          [0, -1], // left
+          [0, 1], // right
+          [-1, -1], // up left
+          [-1, 1], // up  right
+          [1, -1], // down  left
+          [1, 1], // down right
+        ];
+        for (var direction in directions) {
+          var i = 1;
+          while (true) {
+            var newRow = row + i * direction[0];
+            var newCol = col + i * direction[1];
+            if (!isInBoard(newRow, newCol)) {
+              break;
+            }
+            if (board[newRow][newCol] != null) {
+              if (board[newRow][newCol]!.isWhite != piece.isWhite) {
+                canidateMoves.add([newRow, newCol]); // capture
+              }
+              break; // blocked
+            }
+            canidateMoves.add([newRow, newCol]);
+            i++;
+          }
+        }
         break;
       case chessPieceType.king:
         break;
