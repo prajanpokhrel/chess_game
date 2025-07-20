@@ -33,6 +33,9 @@ class _GameBoardState extends State<GameBoard> {
   //list of black pices taken  by white
   List<ChessPiece> blackPicesTaken = [];
 
+  // a boolean to indicate whose tuen it is
+  bool isWhiteTurn = true;
+
   @override
   void initState() {
     super.initState();
@@ -154,9 +157,11 @@ class _GameBoardState extends State<GameBoard> {
     setState(() {
       // no piece is selected yet , this is the first selection
       if (selectedPieces == null && board[row][col] != null) {
-        selectedPieces = board[row][col];
-        selectedRow = row;
-        selectedcol = col;
+        if (board[row][col]!.isWhite == isWhiteTurn) {
+          selectedPieces = board[row][col];
+          selectedRow = row;
+          selectedcol = col;
+        }
       } else if (board[row][col] != null &&
           board[row][col]!.isWhite == selectedPieces!.isWhite) {
         selectedPieces = board[row][col];
@@ -380,6 +385,8 @@ class _GameBoardState extends State<GameBoard> {
       selectedcol = -1;
       vaildMoves = [];
     });
+    // change a turns
+    isWhiteTurn = !isWhiteTurn;
   }
 
   @override
