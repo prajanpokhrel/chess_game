@@ -36,6 +36,11 @@ class _GameBoardState extends State<GameBoard> {
   // a boolean to indicate whose tuen it is
   bool isWhiteTurn = true;
 
+  //initial postion of kings (keep track )
+  List<int> whiteKingPosition = [7, 4];
+  List<int> blackKingPosition = [0, 4];
+  bool checkStatus = false;
+
   @override
   void initState() {
     super.initState();
@@ -131,7 +136,7 @@ class _GameBoardState extends State<GameBoard> {
       isWhite: false,
       imgPath: "assets/images/queen.png",
     );
-    newBoard[7][4] = ChessPiece(
+    newBoard[7][3] = ChessPiece(
       type: chessPieceType.queen,
       isWhite: true,
       imgPath: "assets/images/queen.png",
@@ -143,7 +148,7 @@ class _GameBoardState extends State<GameBoard> {
       isWhite: false,
       imgPath: "assets/images/king1.png",
     );
-    newBoard[7][3] = ChessPiece(
+    newBoard[7][4] = ChessPiece(
       type: chessPieceType.king,
       isWhite: true,
       imgPath: "assets/images/king1.png",
@@ -155,6 +160,15 @@ class _GameBoardState extends State<GameBoard> {
   //User selected piece
   void pieceSelected(int row, int col) {
     setState(() {
+      // Calculate valid moves BEFORE checking if it's a valid move
+      if (selectedPieces != null) {
+        vaildMoves = calculateRawValidMoves(
+          selectedRow,
+          selectedcol,
+          selectedPieces,
+        );
+      }
+
       // no piece is selected yet , this is the first selection
       if (selectedPieces == null && board[row][col] != null) {
         if (board[row][col]!.isWhite == isWhiteTurn) {
@@ -162,8 +176,10 @@ class _GameBoardState extends State<GameBoard> {
           selectedRow = row;
           selectedcol = col;
         }
-      } else if (board[row][col] != null &&
-          board[row][col]!.isWhite == selectedPieces!.isWhite) {
+      }
+      // if clicking on a piece of the same color, switch selection
+      else if (board[row][col] != null &&
+          board[row][col]!.isWhite == isWhiteTurn) {
         selectedPieces = board[row][col];
         selectedRow = row;
         selectedcol = col;
@@ -172,12 +188,19 @@ class _GameBoardState extends State<GameBoard> {
       else if (selectedPieces != null &&
           vaildMoves.any((element) => element[0] == row && element[1] == col)) {
         movePiece(row, col);
+        return; // Early return to avoid recalculating moves after moving
       }
-      vaildMoves = calculateRawValidMoves(
-        selectedRow,
-        selectedcol,
-        selectedPieces,
-      );
+
+      // Recalculate valid moves for the newly selected piece
+      if (selectedPieces != null) {
+        vaildMoves = calculateRawValidMoves(
+          selectedRow,
+          selectedcol,
+          selectedPieces,
+        );
+      } else {
+        vaildMoves = [];
+      }
     });
   }
 
@@ -189,7 +212,8 @@ class _GameBoardState extends State<GameBoard> {
       return [];
     }
     //different direction based on their color
-    int direction = piece!.isWhite ? -1 : 1;
+    int direction = piece.isWhite ? -1 : 1;
+
     switch (piece.type) {
       case chessPieceType.pawn:
         //pawn can move forward if square is empty
@@ -198,7 +222,7 @@ class _GameBoardState extends State<GameBoard> {
           canidateMoves.add([row + direction, col]);
         }
 
-        //pawn can move 2 square if they are at inital postion
+        //pawn can move 2 square if they are at initial position
         if ((row == 1 && !piece.isWhite) || (row == 6 && piece.isWhite)) {
           if (isInBoard(row + 2 * direction, col) &&
               board[row + 2 * direction][col] == null &&
@@ -206,18 +230,22 @@ class _GameBoardState extends State<GameBoard> {
             canidateMoves.add([row + 2 * direction, col]);
           }
         }
-        //pawn can kill diagonallly
+
+        //pawn can kill diagonally - LEFT
         if (isInBoard(row + direction, col - 1) &&
             board[row + direction][col - 1] != null &&
-            board[row + direction][col - 1]!.isWhite) {
+            board[row + direction][col - 1]!.isWhite != piece.isWhite) {
           canidateMoves.add([row + direction, col - 1]);
         }
-        if (isInBoard(row + direction, col - 1) &&
+
+        //pawn can kill diagonally - RIGHT (FIXED: was col - 1, should be col + 1)
+        if (isInBoard(row + direction, col + 1) &&
             board[row + direction][col + 1] != null &&
-            board[row + direction][col + 1]!.isWhite) {
+            board[row + direction][col + 1]!.isWhite != piece.isWhite) {
           canidateMoves.add([row + direction, col + 1]);
         }
         break;
+
       case chessPieceType.rook:
         //horizonatal and vertical directions
         var directions = [
@@ -245,6 +273,7 @@ class _GameBoardState extends State<GameBoard> {
           }
         }
         break;
+
       case chessPieceType.knight:
         //all eight possible L shapes the knight can move
         var knightMoves = [
@@ -272,6 +301,7 @@ class _GameBoardState extends State<GameBoard> {
           canidateMoves.add([newRow, newCol]);
         }
         break;
+
       case chessPieceType.bishop:
         // diagonal direction
         var directions = [
@@ -284,7 +314,9 @@ class _GameBoardState extends State<GameBoard> {
           var i = 1;
           while (true) {
             var newRow = row + i * direction[0];
-            var newCol = col + i * direction[0];
+            var newCol =
+                col +
+                i * direction[1]; // FIXED: was direction[0], should be direction[1]
             if (!isInBoard(newRow, newCol)) {
               break;
             }
@@ -299,6 +331,7 @@ class _GameBoardState extends State<GameBoard> {
           }
         }
         break;
+
       case chessPieceType.queen:
         // all eight directions: up, down ,left , rigth and 4 diagonals
         var directions = [
@@ -330,6 +363,7 @@ class _GameBoardState extends State<GameBoard> {
           }
         }
         break;
+
       case chessPieceType.king:
         var directions = [
           [-1, 0], // up
@@ -355,8 +389,8 @@ class _GameBoardState extends State<GameBoard> {
           }
           canidateMoves.add([newRow, newCol]);
         }
-
         break;
+
       default:
     }
     return canidateMoves;
@@ -378,15 +412,54 @@ class _GameBoardState extends State<GameBoard> {
     // move the peice and clear the old place
     board[newRow][newCol] = selectedPieces;
     board[selectedRow][selectedcol] = null;
-    // clear selection
-    setState(() {
-      selectedPieces = null;
-      selectedRow = -1;
-      selectedcol = -1;
-      vaildMoves = [];
-    });
+
+    // update king position
+    if (selectedPieces!.type == chessPieceType.king) {
+      if (selectedPieces!.isWhite) {
+        whiteKingPosition = [newRow, newCol];
+      } else {
+        blackKingPosition = [newRow, newCol];
+      }
+    }
+
+    // clear selection first
+    selectedPieces = null;
+    selectedRow = -1;
+    selectedcol = -1;
+    vaildMoves = [];
+
     // change a turns
     isWhiteTurn = !isWhiteTurn;
+
+    //see if any kings are in attack
+    checkStatus = isKingIsCheckIn(isWhiteTurn);
+  }
+
+  // is king is check in
+  bool isKingIsCheckIn(bool isWhiteKing) {
+    // get the position of the king
+    List<int> kingPositon = isWhiteKing ? whiteKingPosition : blackKingPosition;
+    // check if any enemy pieces can attack the king
+    for (int i = 0; i < 8; i++) {
+      for (int j = 0; j < 8; j++) {
+        // skip empty squares and piecs of the same color as the king
+        if (board[i][j] == null || board[i][j]!.isWhite == isWhiteKing) {
+          continue;
+        }
+        List<List<int>> pieceValidMoves = calculateRawValidMoves(
+          i,
+          j,
+          board[i][j],
+        );
+        // check king postion is in this pices valid moves
+        if (pieceValidMoves.any(
+          (move) => move[0] == kingPositon[0] && move[1] == kingPositon[1],
+        )) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @override
@@ -410,6 +483,16 @@ class _GameBoardState extends State<GameBoard> {
                   ),
             ),
           ),
+
+          // check status
+          Text(checkStatus ? 'Check!' : ''),
+
+          // game status
+          Text(
+            isWhiteTurn ? 'White\'s Turn' : 'Black\'s Turn',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+
           // chess board
           Expanded(
             flex: 3,
